@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student ID Card System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+   <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header text-center">
+        <div class="container">
+            <h1 class="display-5"><i class="bi bi-person-badge"></i> Student ID Card System</h1>
+            <p class="lead">Register and generate your student ID card</p>
+        </div>
+    </div>
+
+ <div class="container">
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <button class="step active" id="step1" onclick="goToStep('capture')">
+            1
+            <span class="step-label">Capture Photo</span>
+        </button>
+        <button class="step" id="step2" onclick="goToStep('form')">
+            2
+            <span class="step-label">Fill Form</span>
+        </button>
+        <button class="step" id="step3" onclick="goToStep('preview')">
+            3
+            <span class="step-label">Preview ID</span>
+        </button>
+    </div>
+</div>
+
+        <!-- Photo Capture Section -->
+        <div class="row" id="photoSection">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-camera"></i> Capture Student Photo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="camera-container text-center">
+                            <video id="video" autoplay playsinline></video>
+                            <div class="camera-options justify-content-center mt-3">
+                                <button id="captureBtn" class="btn btn-primary"><i class="bi bi-camera"></i> Capture Photo</button>
+                                <button id="switchCamera" class="btn btn-outline-secondary"><i class="bi bi-arrow-left-right"></i> Switch Camera</button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="instruction">Or upload a photo instead</p>
+                            <input type="file" id="photoUpload" accept="image/*" class="d-none">
+                            <button id="uploadTrigger" class="btn btn-outline-primary"><i class="bi bi-upload"></i> Upload Photo</button>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <h6>Photo Preview</h6>
+                            <div class="photo-preview mx-auto">
+                                <i class="bi bi-person fs-1 text-secondary"></i>
+                                <img id="previewImg" src="" alt="Preview">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button id="nextToForm" class="btn btn-success" disabled><i class="bi bi-arrow-right"></i> Continue to Form</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Form Section (Initially Hidden) -->
+        <div class="row d-none" id="formSection">
+            <div class="col-lg-10 mx-auto">
+                <div class="card form-section">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Student Information Form</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="idCardForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="studentName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="studentName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="studentId" class="form-label">Student ID & Roll Number</label>
+                                        <input type="text" class="form-control" id="studentId" required>
+                                    </div>
+                                     <div class="mb-3">
+                                        <label for="studentId" class="form-label">Class/Grade</label>
+                                        <input type="text" class="form-control" id="studentId" required>
+                                    </div>
+                                        <div class="mb-3">
+                                        <label for="studentId" class="form-label">Section</label>
+                                        <input type="text" class="form-control" id="studentId" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="dob" class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" id="dob" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="course" class="form-label">Course</label>
+                                        <input type="text" class="form-control" id="course" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bloodGroup" class="form-label">Blood Group</label>
+                                        <select class="form-select" id="bloodGroup">
+                                            <option value="">Select</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-card-checklist"></i> Generate ID Card</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- List Section (Initially Hidden) -->
+        <div class="row d-none" id="listSection">
+            <div class="col-lg-10 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Registered Students</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Course</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsList">
+                                    <!-- Students will be listed here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ID Card Preview Modal -->
+        <div class="modal fade" id="idCardModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">ID Card Preview</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <button id="printBtn" class="btn btn-success me-2"><i class="bi bi-printer"></i> Print ID Card</button>
+                            <button id="downloadBtn" class="btn btn-primary"><i class="bi bi-download"></i> Download as Image</button>
+                        </div>
+                        
+                        <div class="id-card-container" id="idCardContainer">
+                            <!-- Front of ID Card -->
+                            <div class="id-card mb-4" id="idCardFront">
+                                <div class="p-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="university-logo">UNIVERSITY OF TECHNOLOGY</div>
+                                        <div class="id-number">ID: <span id="previewId">STU-0000</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="me-3">
+                                            <div class="photo-preview" id="cardPhotoPreview">
+                                                <img id="cardPhotoImg" src="" alt="Student Photo">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1 fw-bold" id="previewName">Student Name</h5>
+                                            <div class="small mb-1" id="previewCourse">Course Name</div>
+                                            <div class="small text-muted" id="previewDob">DOB: DD/MM/YYYY</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <div id="previewBloodGroup">Blood Group: N/A</div>
+                                        <div id="previewPhone">Phone: N/A</div>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <div class="authorized-signature"></div>
+                                        <div class="small university-url">
+                                            <i class="bi bi-globe me-1"></i> www.university.edu
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Back of ID Card -->
+                            <div class="id-card id-card-back" id="idCardBack">
+                                <div class="p-4">
+                                    <h6 class="text-center mb-3">UNIVERSITY OF TECHNOLOGY</h6>
+                                    <div class="barcode"></div>
+                                    <div class="student-info">
+                                        <p><strong>ID:</strong> <span id="backPreviewId">STU-0000</span></p>
+                                        <p><strong>Name:</strong> <span id="backPreviewName">Student Name</span></p>
+                                        <p><strong>Course:</strong> <span id="backPreviewCourse">Course Name</span></p>
+                                        <p><strong>Valid Until:</strong> <span id="validUntil">31/12/2025</span></p>
+                                    </div>
+                                    <div class="mt-4 small">
+                                        <p class="mb-1"><strong>Address:</strong> 123 University Avenue, City, State</p>
+                                        <p class="mb-1"><strong>Phone:</strong> +1 (123) 456-7890</p>
+                                        <p class="mb-0"><strong>Email:</strong> info@university.edu</p>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <div class="small text-muted">In case of emergency, please return this card to the address above</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <!-- Fixed Footer -->
+<div class="footer-nav bg-light border-top fixed-bottom">
+  <div class="d-flex justify-content-around py-2">
+    <button class="btn btn-light" id="homeBtn">
+      <i class="bi bi-house fs-3"></i>
+    </button>
+    <button class="btn btn-light" id="listBtn">
+      <i class="bi bi-list-ul fs-3"></i>
+    </button>
+  </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
