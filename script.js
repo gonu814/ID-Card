@@ -77,7 +77,9 @@ if (lastStudent.photo) {
             let lastStudent = savedStudents[savedStudents.length - 1];
             document.getElementById("studentId").value = lastStudent.id;
             document.getElementById("studentName").value = lastStudent.name;
-            document.getElementById("course").value = lastStudent.course;
+            document.getElementById("class").value = lastStudent.class;
+             document.getElementById("section").value = lastStudent.section;
+            document.getElementById("father").value = lastStudent.father;
             document.getElementById("dob").value = lastStudent.dob;
             document.getElementById("bloodGroup").value = lastStudent.bloodGroup;
             document.getElementById("phone").value = lastStudent.phone;
@@ -117,6 +119,7 @@ function goToStep(stepId) {
         initCamera();
     }
 }
+
            // Initialize camera
             function initCamera(facingMode = 'user') {
                 stopCamera(); // Stop any existing stream
@@ -204,29 +207,50 @@ function goToStep(stepId) {
             });
             
           // Modified form submission
-idCardForm.addEventListener('submit', function(e) {
-    e.preventDefault();
+    idCardForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    const student = {
-        id: document.getElementById('studentId').value,
-        name: document.getElementById('studentName').value,
-        course: document.getElementById('course').value,
-        dob: document.getElementById('dob').value,
-        bloodGroup: document.getElementById('bloodGroup').value,
-        phone: document.getElementById('phone').value,
-        photo: capturedPhotoData,
-        issueDate: new Date().toISOString()
-    };
+        // Build student object
+        const student = {
+            id: document.getElementById('studentId').value,
+            name: document.getElementById('studentName').value,
+            class: document.getElementById('class').value,
+            section: document.getElementById('section').value,
+            father: document.getElementById('fatherName').value,
+            dob: document.getElementById('dob').value,
+            bloodgroup: document.getElementById('bloodGroup').value,
+            phone: document.getElementById('phone').value,
+            photo: capturedPhotoData, // <-- from your camera/image capture
+            issueDate: new Date().toLocaleDateString()
+        };
+        // Save to localStorage
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        if (students.length > 0) {
+            students[students.length - 1] = student;
+        } else {
+            students.push(student);
+        }
+        localStorage.setItem('students', JSON.stringify(students));
 
-    // If editing (last student exists), replace instead of pushing
-    if (students.length > 0) {
-        students[students.length - 1] = student;
-    } else {
-        students.push(student);
-    }
+        // --- SEND TO GOOGLE SHEETS (Cloud Excel) ---
+        const formData = new FormData();
+        for (const key in student) {
+            formData.append(key, student[key]);
+        }
 
-    // Save to localStorage
-    localStorage.setItem('students', JSON.stringify(students));
+        fetch(idCardForm.action, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json().catch(() => ({})))
+        .then(response => {
+            alert("Data saved to Google Sheet successfully!");
+            console.log("Response:", response);
+        })
+        .catch(err => {
+            alert("Failed to save data to Google Sheet");
+            console.error(err);
+        });
 
     // Update UI
     formSection.classList.add('d-none');
@@ -238,65 +262,77 @@ idCardForm.addEventListener('submit', function(e) {
     step3.classList.add('active');
 });
             
-            // Update students list
-            function updateStudentsList() {
-                studentsList.innerHTML = '';
-                
-                students.forEach((student, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${student.id}</td>
-                        <td>${student.name}</td>
-                        <td>${student.course}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary view-btn" data-index="${index}">
-                                <i class="bi bi-eye"></i> View Card
-                            </button>
-                        </td>
-                    `;
-                    studentsList.appendChild(row);
-                });
-                
-                // Add event listeners to view buttons
-                document.querySelectorAll('.view-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const index = parseInt(this.getAttribute('data-index'));
-                        showIdCard(students[index]);
-                    });
-                });
-            }
+let studentss = []; // store all students from Google Sheet
+
+// Fetch all students from your Apps Script Web App
+async function loadStudents() {
+    try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ8fH3zWjcWpHKjK3mOhxP3wmBZEfwbAEtGtC9l5KJkBDgpzNMJoLjZrro4w5UXCPj/exec'); // replace with your doGet URL
+        studentss = await response.json();
+        updateStudentsList();
+    } catch (err) {
+        console.error('Failed to fetch students:', err);
+    }
+}
+
+// Update table list
+function updateStudentsList() {
+    studentsList.innerHTML = '';
+
+    studentss.forEach((student, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${student.id}</td>
+            <td>${student.name}</td>
+            <td>${student.class}</td>
+            <td>
+                <button class="btn btn-sm btn-primary view-btn" data-index="${index}">
+                    <i class="bi bi-eye"></i> View Card
+                </button>
+            </td>
+        `;
+        studentsList.appendChild(row);
+    });
+
+    // Add click event listeners to all view buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const index = parseInt(this.getAttribute('data-index'));
+            showIdCard(studentss[index]);
+        });
+    });
+}
+
             
             // Show ID card
-            function showIdCard(student) {
-                // Format the date
-                const dobDate = new Date(student.dob);
-                const formattedDob = dobDate.toLocaleDateString('en-GB');
-                
-                // Calculate valid until date (1 year from now)
-                const validUntil = new Date();
-                validUntil.setFullYear(validUntil.getFullYear() + 1);
-                const formattedValidUntil = validUntil.toLocaleDateString('en-GB');
-                
-                // Update preview
-                document.getElementById('previewName').textContent = student.name;
-                document.getElementById('previewId').textContent = student.id;
-                document.getElementById('backPreviewId').textContent = student.id;
-                document.getElementById('previewCourse').textContent = student.course;
-                document.getElementById('backPreviewCourse').textContent = student.course;
-                document.getElementById('previewDob').textContent = `DOB: ${formattedDob}`;
-                document.getElementById('previewBloodGroup').textContent = `Blood Group: ${student.bloodGroup || 'N/A'}`;
-                document.getElementById('previewPhone').textContent = `Phone: ${student.phone || 'N/A'}`;
-                document.getElementById('backPreviewName').textContent = student.name;
-                document.getElementById('validUntil').textContent = formattedValidUntil;
-                
-                // Update photo
-                const cardPhotoImg = document.getElementById('cardPhotoImg');
-                cardPhotoImg.src = student.photo;
-                cardPhotoImg.style.display = 'block';
-                
-                // Show modal
-                idCardModal.show();
-            }
+           function showIdCard(student) {
+    const dobDate = new Date(student.dob);
+    const formattedDob = dobDate.toLocaleDateString('en-GB');
+
+    const validUntil = new Date();
+    validUntil.setFullYear(validUntil.getFullYear() + 1);
+    const formattedValidUntil = validUntil.toLocaleDateString('en-GB');
+
+    document.getElementById('previewName').textContent = student.name;
+    document.getElementById('previewId').textContent = student.id;
+    document.getElementById('backPreviewId').textContent = student.id;
+    document.getElementById('previewclass').textContent = student.class;
+    document.getElementById('previewsection').textContent = student.section;
+    document.getElementById('backPreviewfather').textContent = student.father;
+    document.getElementById('previewDob').textContent = `DOB: ${formattedDob}`;
+    document.getElementById('previewBloodGroup').textContent = `Blood Group: ${student.bloodgroup || 'N/A'}`;
+    document.getElementById('previewPhone').textContent = `Phone: ${student.phone || 'N/A'}`;
+    document.getElementById('backPreviewName').textContent = student.name;
+    document.getElementById('validUntil').textContent = formattedValidUntil;
+
+    const cardPhotoImg = document.getElementById('cardPhotoImg');
+    cardPhotoImg.src = student.photo; // Drive preview URL
+    cardPhotoImg.style.display = 'block';
+
+    // Show Bootstrap modal
+    const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
+    idCardModal.show();
+}
             
             // Print ID card
             printBtn.addEventListener('click', function() {
@@ -363,12 +399,12 @@ idCardForm.addEventListener('submit', function(e) {
                     link.click();
                 });
             });
-            
+            loadStudents();
             // Initialize the app
             initCamera();
             
             // If we have students, show the list directly
-            if (students.length > 0) {
+            if (studentss.length > 0) {
                 photoSection.classList.add('d-none');
                 formSection.classList.add('d-none');
                 listSection.classList.remove('d-none');
