@@ -139,9 +139,9 @@ function goToStep(stepId) {
                         currentFacingMode = facingMode;
                     })
                     .catch(function(err) {
-                        console.error("Error accessing camera: ", err);
-                        alert("Unable to access camera: " + err.message);
-                    });
+                       console.error("Error accessing camera: ", err);
+                       alert("Unable to access camera: " + err.message);
+                  });
             }
             
             // Stop camera
@@ -326,9 +326,17 @@ function updateStudentsList() {
     document.getElementById('validUntil').textContent = formattedValidUntil;
 
     const cardPhotoImg = document.getElementById('cardPhotoImg');
-    cardPhotoImg.src = student.photo; // Drive preview URL
-    cardPhotoImg.style.display = 'block';
+    let photoUrl = student.photo || '';
 
+    // If it's a HYPERLINK formula, extract URL
+   if (photoUrl.startsWith('=HYPERLINK')) {
+    const match = photoUrl.match(/HYPERLINK\("([^"]+)"/i);
+    photoUrl = match[1].replace("/view?usp=sharing", "/preview");
+       console.log(photoUrl);
+}
+    cardPhotoImg.src = photoUrl;
+    cardPhotoImg.style.display = 'block';
+    console.log(photoUrl);
     // Show Bootstrap modal
     const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
     idCardModal.show();
