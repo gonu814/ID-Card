@@ -267,7 +267,7 @@ let studentss = []; // store all students from Google Sheet
 // Fetch all students from your Apps Script Web App
 async function loadStudents() {
     try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ8fH3zWjcWpHKjK3mOhxP3wmBZEfwbAEtGtC9l5KJkBDgpzNMJoLjZrro4w5UXCPj/exec'); // replace with your doGet URL
+        const response = await fetch('https://script.google.com/macros/s/AKfycbziJ-DNNkOm0uRrGwCAba9JxLXU5STtianiFtoVN_2G8ujO_lCZp0BjsrGRSvlR1lpH/exec'); // replace with your doGet URL
         studentss = await response.json();
         updateStudentsList();
     } catch (err) {
@@ -325,18 +325,33 @@ function updateStudentsList() {
     document.getElementById('backPreviewName').textContent = student.name;
     document.getElementById('validUntil').textContent = formattedValidUntil;
 
-    const cardPhotoImg = document.getElementById('cardPhotoImg');
-    let photoUrl = student.photo || '';
+   
+        // 5️⃣ Handle photo
+        let photoUrl = student.photo || '';
 
-    // If it's a HYPERLINK formula, extract URL
-   if (photoUrl.startsWith('=HYPERLINK')) {
-    const match = photoUrl.match(/HYPERLINK\("([^"]+)"/i);
-    photoUrl = match[1].replace("/view?usp=sharing", "/preview");
-       console.log(photoUrl);
-}
-    cardPhotoImg.src = photoUrl;
-    cardPhotoImg.style.display = 'block';
-    console.log(photoUrl);
+        // If it's Google Drive link, convert to direct viewable link
+        if (photoUrl.includes('drive.google.com')) {
+            const fileIdMatch = photoUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                photoUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+            }
+        }
+
+        // 6️⃣ Fallback to placeholder if photo missing
+        if (!photoUrl) {
+            photoUrl = 'https://via.placeholder.com/150.png?text=No+Photo';
+        }
+
+        // 7️⃣ Apply photo to card
+        const cardPhotoImg = document.getElementById('cardPhotoImg');
+        cardPhotoImg.src = photoUrl;
+        cardPhotoImg.alt = 'Student Photo';
+        cardPhotoImg.style.display = 'block';
+
+        console.log('Final photo URL:', photoUrl);
+
+    
     // Show Bootstrap modal
     const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
     idCardModal.show();
