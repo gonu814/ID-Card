@@ -275,7 +275,6 @@ async function loadStudents() {
     }
 }
 
-// Update table list
 function updateStudentsList() {
     studentsList.innerHTML = '';
 
@@ -287,21 +286,51 @@ function updateStudentsList() {
             <td>${student.class}</td>
             <td>
                 <button class="btn btn-sm btn-primary view-btn" data-index="${index}">
-                    <i class="bi bi-eye"></i> View Card
+                    <i class="bi bi-eye"></i>
                 </button>
+                <button class="btn btn-sm btn-success download-btn" data-index="${index}">
+                    <i class="bi bi-download"></i>
+                </button>
+                <button class="btn btn-sm btn-danger delete-btn" data-index="${index}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+            <td class="text-center">
+                <input type="checkbox" class="select-card" data-index="${index}">
             </td>
         `;
         studentsList.appendChild(row);
     });
 
-    // Add click event listeners to all view buttons
+    // View card
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const index = parseInt(this.getAttribute('data-index'));
             showIdCard(studentss[index]);
         });
     });
+
+    // Delete card
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const index = parseInt(this.getAttribute('data-index'));
+            if (confirm(`Delete ID Card for ${studentss[index].name}?`)) {
+                studentss.splice(index, 1);
+                localStorage.setItem('students', JSON.stringify(studentss));
+                updateStudentsList();
+            }
+        });
+    });
+
+    // Download single card
+    document.querySelectorAll('.download-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const index = parseInt(this.getAttribute('data-index'));
+            await downloadStudentCard(studentss[index]);
+        });
+    });
 }
+
 
             
             // Show ID card
@@ -353,7 +382,7 @@ function updateStudentsList() {
 
     
     // Show Bootstrap modal
-    const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
+     const idCardModal = new bootstrap.Modal(document.getElementById('idCardModal'));
     idCardModal.show();
 }
             
@@ -413,15 +442,172 @@ function updateStudentsList() {
                 location.reload();
             });
             
-            // Download ID card
-            downloadBtn.addEventListener('click', function() {
-                html2canvas(document.getElementById('idCardContainer')).then(function(canvas) {
-                    const link = document.createElement('a');
-                    link.download = `id-card-${document.getElementById('previewId').textContent}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                });
-            });
+            // Download both sides (front & back) as separate PNGs
+ document.getElementById('downloadBothBtn').addEventListener('click', async function() {
+    const front = document.getElementById('idCardFront');
+    const back = document.getElementById('idCardBack');
+
+    if (!front || !back) return;
+
+    // 1. Temporarily convert CSS barcode to an image
+    const barcode = back.querySelector('.barcode');
+    let barcodeImg = null;
+    if (barcode) {
+        const barcodeCanvas = document.createElement('canvas');
+        barcodeCanvas.width = barcode.offsetWidth;
+        barcodeCanvas.height = barcode.offsetHeight;
+        const ctx = barcodeCanvas.getContext('2d');
+
+        // Fill white background
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, barcodeCanvas.width, barcodeCanvas.height);
+
+        // Draw the barcode as black stripes
+        const stripeWidth = 1;
+        const gap = 20; // repeat pattern width
+        for (let x = 0; x < barcodeCanvas.width; x += gap) {
+            ctx.fillStyle = "#000";
+            ctx.fillRect(x, 0, stripeWidth, barcodeCanvas.height);
+        }
+
+        // Replace original barcode with image for html2canvas
+        barcodeImg = document.createElement('img');
+        barcodeImg.src = barcodeCanvas.toDataURL('image/png');
+        barcodeImg.style.width = '100%';
+        barcodeImg.style.height = '80px';
+        barcode.innerHTML = '';
+        barcode.appendChild(barcodeImg);
+    }
+
+    // 2. Capture front and back as canvas
+    const frontCanvas = await html2canvas(front, { scale: 3 });
+    const backCanvas = await html2canvas(back, { scale: 3 });
+
+    // 3. Create a combined canvas
+    const combinedCanvas = document.createElement('canvas');
+    const width = Math.max(frontCanvas.width, backCanvas.width);
+    const height = frontCanvas.height + backCanvas.height;
+    combinedCanvas.width = width;
+    combinedCanvas.height = height;
+
+    const ctx = combinedCanvas.getContext('2d');
+    ctx.fillStyle = "#ffffff"; // white background
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(frontCanvas, 0, 0);
+    ctx.drawImage(backCanvas, 0, frontCanvas.height);
+
+    // 4. Trigger download
+    const link = document.createElement('a');
+    link.download = `IDCard_${document.getElementById('previewId').textContent}.png`;
+    link.href = combinedCanvas.toDataURL('image/png');
+    link.click();
+
+    // 5. Restore original barcode CSS
+    if (barcodeImg) {
+        barcode.innerHTML = '';
+        barcode.style.border = '1px solid #ddd';
+        barcode.style.background = 'repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 20px)';
+    }
+});
+
+// --- FINAL FIXED "Download All (PDF)" BUTTON ---
+// Downloads only selected student cards into one single PDF (no modal opens, no black screen)
+document.getElementById("downloadAllBtn").addEventListener("click", async function () {
+    // ✅ Get all checked checkboxes (no class name dependency)
+    const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert("Please select at least one student to download!");
+        return;
+    }
+
+    // ✅ Create a list of students to download based on checkbox index
+    const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+    const selectedStudents = [];
+
+    selectedCheckboxes.forEach(chk => {
+        const index = Array.from(allCheckboxes).indexOf(chk);
+        if (studentss[index]) selectedStudents.push(studentss[index]);
+    });
+
+    if (selectedStudents.length === 0) {
+        alert("No matching student records found for selected checkboxes!");
+        return;
+    }
+
+    // ✅ Prevent modal or black background
+    const modal = document.getElementById("idCardModal");
+    const backdrop = document.querySelector(".modal-backdrop");
+    let originalDisplay = "";
+    if (modal) {
+        originalDisplay = modal.style.display;
+        modal.style.display = "none";
+        modal.classList.remove("show");
+    }
+    if (backdrop) backdrop.remove();
+
+    // ✅ Initialize jsPDF
+    const { jsPDF } =
+        window.jspdf ||
+        await import("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    // ✅ Generate PDF for each selected student
+    for (let i = 0; i < selectedStudents.length; i++) {
+        const student = selectedStudents[i];
+
+        // Use your existing showIdCard() logic
+        await showIdCard(student);
+        await new Promise(resolve => setTimeout(resolve, 700)); // wait for rendering
+
+        const cardFront = document.getElementById("idCardFront");
+        const cardBack = document.getElementById("idCardBack");
+
+        if (!cardFront || !cardBack) continue;
+
+        const frontCanvas = await html2canvas(cardFront, { scale: 2, useCORS: true });
+        const backCanvas = await html2canvas(cardBack, { scale: 2, useCORS: true });
+
+        const frontImg = frontCanvas.toDataURL("image/png");
+        const backImg = backCanvas.toDataURL("image/png");
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(frontImg, "PNG", 15, 20, 180, 0);
+        pdf.addImage(backImg, "PNG", 15, 130, 180, 0);
+    }
+
+    // ✅ Restore modal state
+    if (modal) {
+        modal.style.display = originalDisplay;
+        modal.classList.remove("show");
+    }
+
+    pdf.save("Selected_Students_IDCards.pdf");
+    alert("✅ Selected student ID cards downloaded successfully!");
+});
+
+// Delete selected students
+document.getElementById("deleteSelectedBtn").addEventListener("click", function () {
+    const selectedCheckboxes = document.querySelectorAll(".select-card:checked");
+    if (selectedCheckboxes.length === 0) {
+        alert("Please select at least one student to delete.");
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedCheckboxes.length} selected record(s)?`)) return;
+
+    const indexesToDelete = Array.from(selectedCheckboxes).map(cb => parseInt(cb.getAttribute("data-index")));
+    indexesToDelete.sort((a, b) => b - a); // delete from end to avoid reindex issues
+
+    indexesToDelete.forEach(index => {
+        studentss.splice(index, 1);
+    });
+
+    localStorage.setItem("students", JSON.stringify(studentss));
+    updateStudentsList();
+    alert("Selected students deleted successfully!");
+});
+
+  
             loadStudents();
             // Initialize the app
             initCamera();
@@ -436,7 +622,6 @@ function updateStudentsList() {
                 step1.classList.add('completed');
                 step2.classList.add('completed');
                 step3.classList.add('active');
-            }
-            
+            }   
         });
         

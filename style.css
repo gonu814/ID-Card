@@ -90,65 +90,219 @@
             display: none;
         }
         
-        .id-card {
-            width: 100%;
-            max-width: 300px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            border: 1px solid #e0e0e0;
-            margin: 0 auto;
-        }
+       /* ==== SCHOOL ID CARD STYLE ENHANCEMENT ==== */
+
+/* Front side look */
+/* ===== FRONT SIDE DESIGN - SCHOOL STYLE (PHOTO ON TOP) ===== */
+#idCardFront {
+ width: 100%; max-width: 300px; 
+ background: white;
+  border-radius: 12px; 
+ box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); 
+ overflow: hidden;
+  border: 1px solid #e0e0e0; 
+ margin: 0 auto;
+}
+
+/* Decorative circles (background aesthetics) */
+#idCardFront::before,
+#idCardFront::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(26, 95, 180, 0.1);
+}
+#idCardFront::before {
+  top: -60px;
+  left: -60px;
+  width: 150px;
+  height: 150px;
+}
+#idCardFront::after {
+  bottom: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+}
+
+/* School name */
+#idCardFront .university-logo {
+  font-size: 1.25rem;
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+/* ID Number styling */
+#idCardFront .id-number {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 8px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); 
+  overflow: hidden;
+  border: 1px solid #e0e0e0; 
+ margin: 0 auto;
+ border-radius: 12px; 
+}
+
+/* Student Photo */
+#idCardFront .photo-preview {
+  width: 120px; height: 150px; 
+  border: 2px dashed #ddd; 
+  border-radius: 8px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  overflow: hidden; 
+  margin: 0 auto;
+   background: #f8f9fa;
+}
+
+#idCardFront .photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Student Info */
+#idCardFront .student-details {
+  margin-top: 10px;
+  text-align: center;
+}
+
+#idCardFront .student-details h5 {
+  color: var(--dark);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+#idCardFront .student-details p {
+  margin: 2px 0;
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: 500;
+}
+
+#idCardFront .student-details strong {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Signature & Footer */
+#idCardFront .authorized-signature {
+  width: 140px;
+  margin: 0.8rem auto 0 auto;
+  border-bottom: 1px solid #777;
+}
+
+#idCardFront .authorized-signature::after {
+  content: "Class Teacher";
+  display: block;
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: 2px;
+  text-align: center;
+}
+
+#idCardFront .university-url {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ===== BACK SIDE ===== */
+#idCardBack {
+ width: 100%;
+  max-width: 300px; 
+ background: white; 
+ border-radius: 12px; 
+ box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden; 
+ border: 1px solid #e0e0e0; 
+ margin: 0 auto;
+}
+
+#idCardBack::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  background: rgba(26, 95, 180, 0.08);
+  border-radius: 50%;
+}
+
+#idCardBack h6 {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+/* Barcode spacing */
+#idCardBack .barcode {
+  border: 1px solid #ddd;
+  background-color: #fff;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Info text alignment */
+#idCardBack .student-info p {
+  margin-bottom: 0.4rem;
+  color: #333;
+}
+
+/* Principal signature section */
+#idCardBack .text-center.mt-4 {
+  margin-top: 1.5rem !important;
+}
+
+#idCardBack .text-center.mt-4::before {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 1px;
+  background: #777;
+  margin: 0 auto 4px;
+}
+
+#idCardBack .text-center.mt-4::after {
+  content: "Principal";
+  display: block;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+/* Emergency note */
+#idCardBack .text-muted {
+  font-size: 0.8rem;
+  color: #777 !important;
+}
+
+/* Card shadow and rounded edges for both sides */
+#idCardFront, #idCardBack {
+  border-radius: 14px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+.barcode { 
+    height: 80px; 
+    background: white; 
+    background-image: repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 20px);
+     margin: 1rem 0; position: relative; 
+    } 
         
-        .id-card-back {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        }
-        
-        .id-card .university-logo {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-        
-        .id-card .id-number {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .barcode {
-            height: 80px;
-            background: white;
-            background-image: repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 20px);
-            margin: 1rem 0;
-            position: relative;
-        }
-        
-        .barcode::before, .barcode::after {
-            content: "";
-            position: absolute;
-            height: 100%;
-            width: 4px;
-            background: #000;
-            left: 10px;
-        }
-        
-        .barcode::after {
-            left: auto;
-            right: 10px;
-        }
-        
-        .student-info {
-            font-size: 0.85rem;
-        }
-        
-        .authorized-signature {
-            height: 40px;
-            border-bottom: 1px solid #ddd;
-            margin: 1rem 0;
-        }
-        
-        .list-group-item {
+     .list-group-item {
             transition: all 0.3s;
             border-left: 4px solid transparent;
         }
